@@ -285,13 +285,9 @@ def _preload_models():
     except Exception as _e:
         print(f"[startup] Warning: could not preload models: {_e}")
 
-    # Also preload Google Sheets caregiver data to warm up the cache
-    try:
-        print("[startup] Preloading caregiver data from Google Sheets ...")
-        get_caregiver_df()
-        print("[startup] Caregiver data ready.")
-    except Exception as _e:
-        print(f"[startup] Warning: could not preload caregiver data: {_e}")
+    # The caregiver data is now preloaded instantly from CSV on first request,
+    # but we trigger a background update to fetch fresh data from Google Sheets.
+    _threading.Thread(target=_bg_update_caregiver_cache, daemon=True).start()
 
 import threading as _threading
 _threading.Thread(target=_preload_models, daemon=True).start()
@@ -302,21 +298,43 @@ def get_sheet(name):
     return get_spreadsheet().worksheet(name)
 
 
-# Cache caregiver data from Google Sheets for 5 minutes
-# to avoid slow API calls (>60s) that cause Cloudflare 502 errors
+# Cache caregiver data. Preload from local CSV for instant startup (fixes 60s timeout).
+# The background thread will update this cache from Google Sheets.
 _caregiver_cache = {"data": None, "ts": 0}
-_CAREGIVER_CACHE_TTL = 300  # 5 minutes
 
 def get_caregiver_df():
     import time as _time
+    import os
     now = _time.time()
-    if _caregiver_cache["data"] is not None and (now - _caregiver_cache["ts"]) < _CAREGIVER_CACHE_TTL:
+    
+    # Return cache if it exists
+    if _caregiver_cache["data"] is not None:
+        # If cache is older than 5 minutes, we COULD fetch here, but to completely 
+        # avoid Render 502s, we just return the cache and let a background thread update it.
         return _caregiver_cache["data"]
-    df = pd.DataFrame(get_sheet("Caregiver_Data").get_all_records()).fillna(0)
+        
+    # If no cache, load from local CSV instantly
+    print("[cache] Loading caregivers from local CSV fallback...")
+    if os.path.exists("caregivers.csv"):
+        df = pd.read_csv("caregivers.csv").fillna(0)
+    else:
+        # Absolute worst case (should never happen since we commit the CSV)
+        df = pd.DataFrame(get_sheet("Caregiver_Data").get_all_records()).fillna(0)
+        
     _caregiver_cache["data"] = df
     _caregiver_cache["ts"] = now
-    print(f"[cache] Refreshed caregiver data: {len(df)} rows")
     return df
+
+def _bg_update_caregiver_cache():
+    import time as _time
+    try:
+        df = pd.DataFrame(get_sheet("Caregiver_Data").get_all_records()).fillna(0)
+        _caregiver_cache["data"] = df
+        _caregiver_cache["ts"] = _time.time()
+        print(f"[bg_cache] Updated caregivers from Google Sheets: {len(df)} rows")
+    except Exception as e:
+        print(f"[bg_cache] Error updating from Google Sheets: {e}")
+
 
 
 def normalize_bool(value):
