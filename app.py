@@ -63,7 +63,14 @@ if db_uri and ("postgresql" in db_uri or "postgres" in db_uri):
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "connect_args": {
             "sslmode": "prefer" 
-        }
+        },
+        "pool_pre_ping": True,
+        "pool_recycle": 300
+    }
+else:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300
     }
 # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -228,9 +235,17 @@ def get_spreadsheet():
     if google_creds_json:
         try:
             import base64
-            if not google_creds_json.strip().startswith("{"):
-                google_creds_json = base64.b64decode(google_creds_json).decode("utf-8")
-            keyfile_dict = _json.loads(google_creds_json)
+            clean_str = google_creds_json.strip()
+            # Remove markdown formatting if user accidentally copied it
+            if clean_str.startswith("```"):
+                lines = clean_str.split("\n")
+                if lines[0].startswith("```"): lines = lines[1:]
+                if lines and lines[-1].startswith("```"): lines = lines[:-1]
+                clean_str = "".join(lines).strip()
+            
+            if not clean_str.startswith("{"):
+                clean_str = base64.b64decode(clean_str).decode("utf-8")
+            keyfile_dict = _json.loads(clean_str)
             creds = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict, scopes)
         except Exception as e:
             print(f"Error loading credentials from GOOGLE_CREDENTIALS_JSON: {e}")
@@ -1376,8 +1391,10 @@ def match_elder():
             }
         )
     except ValueError as exc:
+        db.session.rollback()
         return api_error(str(exc), 422)
     except Exception as exc:
+        db.session.rollback()
         return api_error(f"ไม่สามารถวิเคราะห์ข้อมูลได้: {exc}", 500)
 
 
