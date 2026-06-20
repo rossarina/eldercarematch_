@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext";
+import { API_BASE_URL } from "../api";
 
 /**
  * หน้านี้รับ token จาก backend หลัง Google OAuth callback
  * URL: /google-callback?token=xxx&is_new=true/false
  */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 
 export default function GoogleCallback({ onSuccess }) {
   const { login } = useAuth();
@@ -59,7 +59,7 @@ export default function GoogleCallback({ onSuccess }) {
   const finishLogin = async (jwtToken) => {
     try {
       // Decode token to get user info (or fetch profile)
-      const response = await fetch(`${API_BASE}/auth/profile`, {
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         headers: { Authorization: `Bearer ${jwtToken}` },
       });
       const data = await response.json();
@@ -77,7 +77,7 @@ export default function GoogleCallback({ onSuccess }) {
   const handleTypeSelect = async () => {
     // Update user type via API
     try {
-      await fetch(`${API_BASE}/auth/profile`, {
+      await fetch(`${API_BASE_URL}/auth/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
