@@ -1,0 +1,15 @@
+Flask
+Flask-SQLAlchemy
+Flask-JWT-Extended
+bcrypt
+joblib
+numpy
+pandas
+scikit-learn==1.7.2
+gspread
+oauth2client
+python-dotenv
+gunicorn
+psycopg2-binary
+flask-cors
+psycopg2-binary>=2.9.9
