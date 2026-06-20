@@ -257,15 +257,18 @@ def get_spreadsheet():
 
 
 @lru_cache(maxsize=1)
-def load_assets():
+def load_base_assets():
     scaler = joblib.load("scaler.pkl")
     model_features = joblib.load("model_features.pkl")
     scaler_features = list(getattr(scaler, "feature_names_in_", model_features))
-    models = {
-        key: joblib.load(config["filename"])
-        for key, config in MODEL_FILE_MAP.items()
-    }
-    return models, model_features, scaler, scaler_features
+    return model_features, scaler, scaler_features
+
+@lru_cache(maxsize=4)
+def load_model(model_key):
+    config = MODEL_FILE_MAP.get(model_key)
+    if not config:
+        return None
+    return joblib.load(config["filename"])
 
 
 def get_sheet(name):
@@ -380,7 +383,8 @@ def get_model_and_scaler(model_key):
     return model, model_features, scaler, scaler_features
 
 def score_ai_matches(elder_info, caregiver_df, model_key, preferences, wage_range):
-    active_model, model_features, scaler, scaler_features = get_model_and_scaler(model_key)
+    model_features, scaler, scaler_features = load_base_assets()
+    active_model = load_model(model_key)
 
     min_wage, max_wage = wage_range
     caregiver_df = caregiver_df.copy()
