@@ -281,13 +281,8 @@ def _preload_models():
         for key in MODEL_FILE_MAP:
             load_model(key)
             print(f"[startup]   loaded {key}")
-        print("[startup] All models ready.")
     except Exception as _e:
         print(f"[startup] Warning: could not preload models: {_e}")
-
-    # The caregiver data is now preloaded instantly from CSV on first request,
-    # but we trigger a background update to fetch fresh data from Google Sheets.
-    _threading.Thread(target=_bg_update_caregiver_cache, daemon=True).start()
 
 # We DO NOT preload models in the background anymore because unpickling large models (like Random Forest)
 # holds the Python GIL and completely freezes the Render Free Tier (0.1 CPU) for 50+ seconds,
@@ -474,6 +469,10 @@ def score_ai_matches(elder_info, caregiver_df, model_key, preferences, wage_rang
     elder_lat, elder_lon = DISTRICT_COORDS.get(elder_info["location"], (13.75, 100.5))
     results = []
 
+    # BATCH FEATURE EXTRACTION
+    batch_features = []
+    caregiver_meta = []
+
     for _, caregiver in caregiver_df.iterrows():
         matched_skills, gap_count = get_matched_skills(elder_info, caregiver)
         all_skills = get_all_skills(caregiver)
@@ -498,16 +497,33 @@ def score_ai_matches(elder_info, caregiver_df, model_key, preferences, wage_rang
             "skill_dressing": to_int(caregiver.get("skill_dressing")),
             "experience_years": to_float(caregiver.get("experience_years")),
         }
-        input_data = pd.DataFrame([
-            {
-                feature_name: raw_features[feature_name]
-                for feature_name in scaler_features
-            }
-        ])
+        
+        batch_features.append({fn: raw_features[fn] for fn in scaler_features})
+        caregiver_meta.append({
+            "cg_row": caregiver,
+            "matched_skills": matched_skills,
+            "gap_count": gap_count,
+            "all_skills": all_skills,
+            "distance_km": distance_km
+        })
 
+    # BATCH PREDICTION
+    if batch_features:
+        input_data = pd.DataFrame(batch_features)
         scaled = scaler.transform(input_data)
         model_input = pd.DataFrame(scaled, columns=scaler_features)[model_features]
-        probability = float(active_model.predict_proba(model_input)[0, 1])
+        probabilities = active_model.predict_proba(model_input)[:, 1]
+    else:
+        probabilities = []
+
+    # ASSEMBLE RESULTS
+    for i, meta in enumerate(caregiver_meta):
+        caregiver = meta["cg_row"]
+        probability = float(probabilities[i])
+        gap_count = meta["gap_count"]
+        distance_km = meta["distance_km"]
+        matched_skills = meta["matched_skills"]
+        all_skills = meta["all_skills"]
 
         final_score = probability
         if "skill_precision" in preferences:
