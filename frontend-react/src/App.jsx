@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { fetchConfig, matchElder, registerCaregiver, hireCaregiver, getNotifications, getMyCaregiverProfile, getMyElderProfile, getCaregiverReviews } from "./api.js";
+import { fetchConfig, matchElder, registerCaregiver, hireCaregiver, getNotifications, getMyCaregiverProfile, getMyElderProfile, getCaregiverReviews, wakeUpServer } from "./api.js";
 import { AuthProvider, useAuth } from "./AuthContext";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -519,16 +519,16 @@ function AppContent() {
     setLoading(true);
     setError("");
     try {
+      // Wake up Render free-tier server first (may take 50+ sec on cold start)
+      await wakeUpServer((msg) => msg && setError(msg));
       const result = await matchElder(elderForm);
       if (result.user) {
         updateUser(result.user);
       }
       setMatchResult(result);
       setSwipeIndex(0);
-      setToast("บันทึกข้อมูลและวิเคราะห์สำเร็จ");
-      setToast(result.message || "บันทึกข้อมูลและวิเคราะห์สำเร็จ");
+      setError("");
       setToast(result.result_message || result.message || "บันทึกข้อมูลและวิเคราะห์สำเร็จ");
-      setToast("บันทึกข้อมูลและวิเคราะห์สำเร็จ");
       go(ROUTES.elderResults);
     } catch (err) {
       setError(err.message);

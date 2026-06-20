@@ -1,4 +1,21 @@
 export const API_BASE_URL = import.meta.env.DEV ? "/api" : "https://eldercare-backend-40ad.onrender.com/api";
+
+// Render free tier spins down when idle (50+ sec cold start).
+// Call this before heavy requests to wake the server first.
+export async function wakeUpServer(onStatus) {
+  if (import.meta.env.DEV) return;
+  try {
+    onStatus && onStatus("กำลังปลุก AI server... (อาจใช้เวลา 1-2 นาทีในครั้งแรก)");
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 90000);
+    await fetch(`${API_BASE_URL}/health`, { signal: ctrl.signal });
+    clearTimeout(timer);
+    onStatus && onStatus("");
+  } catch (_) {
+    onStatus && onStatus("");
+  }
+}
+
 async function request(path, options = {}) {
   const token = localStorage.getItem("authToken");
 

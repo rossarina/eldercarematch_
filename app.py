@@ -285,6 +285,14 @@ def _preload_models():
     except Exception as _e:
         print(f"[startup] Warning: could not preload models: {_e}")
 
+    # Also preload Google Sheets caregiver data to warm up the cache
+    try:
+        print("[startup] Preloading caregiver data from Google Sheets ...")
+        get_caregiver_df()
+        print("[startup] Caregiver data ready.")
+    except Exception as _e:
+        print(f"[startup] Warning: could not preload caregiver data: {_e}")
+
 import threading as _threading
 _threading.Thread(target=_preload_models, daemon=True).start()
 # -------------------------------------------------------------------------------
@@ -292,6 +300,23 @@ _threading.Thread(target=_preload_models, daemon=True).start()
 
 def get_sheet(name):
     return get_spreadsheet().worksheet(name)
+
+
+# Cache caregiver data from Google Sheets for 5 minutes
+# to avoid slow API calls (>60s) that cause Cloudflare 502 errors
+_caregiver_cache = {"data": None, "ts": 0}
+_CAREGIVER_CACHE_TTL = 300  # 5 minutes
+
+def get_caregiver_df():
+    import time as _time
+    now = _time.time()
+    if _caregiver_cache["data"] is not None and (now - _caregiver_cache["ts"]) < _CAREGIVER_CACHE_TTL:
+        return _caregiver_cache["data"]
+    df = pd.DataFrame(get_sheet("Caregiver_Data").get_all_records()).fillna(0)
+    _caregiver_cache["data"] = df
+    _caregiver_cache["ts"] = now
+    print(f"[cache] Refreshed caregiver data: {len(df)} rows")
+    return df
 
 
 def normalize_bool(value):
@@ -1368,7 +1393,7 @@ def match_elder():
             existing_elder_id = current_user.elder_id or None
         elder_info = save_elder(payload, elder_id=existing_elder_id)
         linked_user = attach_elder_to_logged_in_user(elder_info["elder_id"])
-        caregivers = pd.DataFrame(get_sheet("Caregiver_Data").get_all_records()).fillna(0)
+        caregivers = get_caregiver_df()
         scored_matches = score_ai_matches(
             elder_info=elder_info,
             caregiver_df=caregivers,
