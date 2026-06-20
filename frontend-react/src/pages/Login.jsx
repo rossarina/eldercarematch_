@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../AuthContext";
-import { loginUser, googleLoginWithToken } from "../api";
+import { loginUser, API_BASE_URL } from "../api";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
@@ -53,7 +53,7 @@ export default function Login({ onLoginSuccess, onSignupClick }) {
   // Google One Tap / redirect flow
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
-    window.location.href = "/api/auth/google";
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   return (
