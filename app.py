@@ -94,22 +94,7 @@ with app.app_context():
             db.session.execute(text("ALTER TABLE users ADD COLUMN elder_id VARCHAR(50)"))
             db.session.commit()
 
-# ---- Preload ML models at startup to avoid first-request timeout on Render ----
-# (Random Forest is ~20MB; loading during a request causes 502/504 timeout)
-def _preload_models():
-    try:
-        print("[startup] Preloading ML models into memory ...")
-        load_base_assets()          # scaler + feature list
-        for key in MODEL_FILE_MAP:
-            load_model(key)
-            print(f"[startup]   loaded {key}")
-        print("[startup] All models ready.")
-    except Exception as _e:
-        print(f"[startup] Warning: could not preload models: {_e}")
-
-import threading as _threading
-_threading.Thread(target=_preload_models, daemon=True).start()
-# -------------------------------------------------------------------------------
+# (Preloading happens after model helpers are defined, see below)
 
 DISTRICT_COORDS = {
     "พระนคร": (13.76498, 100.49873),
@@ -286,6 +271,23 @@ def load_model(model_key):
     if not config:
         return None
     return joblib.load(config["filename"])
+
+
+# ---- Preload ML models at startup to avoid first-request timeout on Render ----
+def _preload_models():
+    try:
+        print("[startup] Preloading ML models into memory ...")
+        load_base_assets()
+        for key in MODEL_FILE_MAP:
+            load_model(key)
+            print(f"[startup]   loaded {key}")
+        print("[startup] All models ready.")
+    except Exception as _e:
+        print(f"[startup] Warning: could not preload models: {_e}")
+
+import threading as _threading
+_threading.Thread(target=_preload_models, daemon=True).start()
+# -------------------------------------------------------------------------------
 
 
 def get_sheet(name):
