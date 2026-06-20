@@ -249,8 +249,8 @@ const CAREGIVER_FINAL_STEP = CAREGIVER_BASE_STEPS + caregiverBinaryQuestions.len
 
 function getHashRoute() {
   const hash = window.location.hash.replace("#", "");
-  // ตรวจสอบ /google-callback path หรือ error
-  if (window.location.pathname.startsWith("/google-callback") || window.location.search.includes("google_error")) {
+  // ตรวจสอบ /google-callback path หรือ error หรือ hash
+  if (window.location.pathname.startsWith("/google-callback") || window.location.search.includes("google_error") || hash.startsWith("google-callback")) {
     return "google-callback";
   }
   return Object.values(ROUTES).includes(hash) ? hash : ROUTES.home;
