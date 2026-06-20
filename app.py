@@ -1391,8 +1391,25 @@ def match_elder():
         existing_elder_id = None
         if current_user and current_user.user_type == "elder":
             existing_elder_id = current_user.elder_id or None
-        elder_info = save_elder(payload, elder_id=existing_elder_id)
-        linked_user = attach_elder_to_logged_in_user(elder_info["elder_id"])
+
+        # --- Compute elder_info locally (no Sheets I/O) for fast AI scoring ---
+        location = payload["location"]
+        lat, lon = DISTRICT_COORDS[location]
+        adl = payload["adl_scores"]
+        total_adl = compute_total_adl(adl)
+        derived = derive_dependency(total_adl)
+        # Generate/reuse elder_id for local use; actual Sheets write happens in background
+        elder_id_local = existing_elder_id or f"E_tmp_{current_user.id if current_user else 'guest'}"
+        elder_info = {
+            "elder_id": elder_id_local,
+            "location": location,
+            "care_time": payload["care_time"],
+            "dependency_level": derived["dependency_level"],
+            "adl_group": derived["adl_group"],
+            **adl,
+        }
+
+        # --- Score AI matches immediately (fast: <2s) ---
         caregivers = get_caregiver_df()
         scored_matches = score_ai_matches(
             elder_info=elder_info,
@@ -1401,6 +1418,7 @@ def match_elder():
             preferences=payload.get("preferences", []),
             wage_range=wage_range,
         )
+
         matching_result = select_ai_matches(scored_matches, wage_range)
 
         caregiver_ids = [item["caregiver_id"] for item in matching_result["matches"] if item.get("caregiver_id")]
@@ -1425,17 +1443,28 @@ def match_elder():
                     item["profile_image"] = None
                     item["avatar_url"] = None
 
+        # --- Save to Google Sheets in background (don't block response) ---
+        def _bg_save():
+            try:
+                saved = save_elder(payload, elder_id=existing_elder_id)
+                attach_elder_to_logged_in_user(saved["elder_id"])
+            except Exception as _e:
+                print(f"[bg_save] Warning: {_e}")
+
+        import threading as _t
+        _t.Thread(target=_bg_save, daemon=True).start()
+
         return jsonify(
             {
                 "ok": True,
                 "message": "วิเคราะห์และจับคู่สำเร็จ",
-                "elder_id": elder_info["elder_id"],
+                "elder_id": elder_id_local,
                 "adl_group": elder_info["adl_group"],
                 "dependency_level": elder_info["dependency_level"],
                 "match_strategy": matching_result["strategy"],
                 "result_message": matching_result["message"],
                 "matches": matching_result["matches"],
-                "user": linked_user.to_dict() if linked_user else None,
+                "user": current_user.to_dict() if current_user else None,
             }
         )
     except ValueError as exc:
