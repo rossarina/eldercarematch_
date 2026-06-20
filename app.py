@@ -270,7 +270,7 @@ def load_model(model_key):
     config = MODEL_FILE_MAP.get(model_key)
     if not config:
         return None
-    return joblib.load(config["filename"])
+    return joblib.load(config["filename"], mmap_mode='r')
 
 
 # ---- Preload ML models at startup to avoid first-request timeout on Render ----
