@@ -66,7 +66,7 @@ export default function GoogleCallback({ onSuccess }) {
       if (data.ok) {
         login(jwtToken, data.user);
         // Clear URL params
-        window.history.replaceState({}, document.title, "/");
+        window.history.replaceState({}, document.title, window.location.pathname);
         onSuccess?.();
       }
     } catch {
