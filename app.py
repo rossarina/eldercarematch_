@@ -289,8 +289,10 @@ def _preload_models():
     # but we trigger a background update to fetch fresh data from Google Sheets.
     _threading.Thread(target=_bg_update_caregiver_cache, daemon=True).start()
 
-import threading as _threading
-_threading.Thread(target=_preload_models, daemon=True).start()
+# We DO NOT preload models in the background anymore because unpickling large models (like Random Forest)
+# holds the Python GIL and completely freezes the Render Free Tier (0.1 CPU) for 50+ seconds,
+# causing all incoming requests (even /api/health) to timeout with 502/503.
+# Models will be loaded lazily on first use.
 # -------------------------------------------------------------------------------
 
 
