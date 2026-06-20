@@ -227,6 +227,9 @@ def get_spreadsheet():
     google_creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
     if google_creds_json:
         try:
+            import base64
+            if not google_creds_json.strip().startswith("{"):
+                google_creds_json = base64.b64decode(google_creds_json).decode("utf-8")
             keyfile_dict = _json.loads(google_creds_json)
             creds = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict, scopes)
         except Exception as e:
