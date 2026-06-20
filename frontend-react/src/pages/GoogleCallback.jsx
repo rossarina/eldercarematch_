@@ -17,7 +17,11 @@ export default function GoogleCallback({ onSuccess }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    // Extract query parameters from hash (e.g. #google-callback?token=123)
+    const hash = window.location.hash;
+    const queryString = hash.includes("?") ? hash.substring(hash.indexOf("?")) : window.location.search;
+    const params = new URLSearchParams(queryString);
+    
     const googleError = params.get("google_error");
     const jwtToken = params.get("token");
     const newUser = params.get("is_new") === "true";
