@@ -985,7 +985,7 @@ def google_callback():
         user_data = _json.dumps(user.to_dict())
 
         redirect_url = (
-            f"{FRONTEND_URL}/google-callback"
+            f"{FRONTEND_URL.rstrip('/')}/#google-callback"
             f"?token={urllib.parse.quote(jwt_token)}"
             f"&is_new={str(is_new_user).lower()}"
         )
