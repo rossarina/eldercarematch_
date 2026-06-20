@@ -48,7 +48,7 @@ const elderDefaults = {
   location: "",
   care_time: "",
   wage_range: ["", ""],
-  model: "random_forest",
+  model: "neural_network",
   preferences: [],
   adl_scores: {
     v1: null,
@@ -392,7 +392,7 @@ function AppContent() {
           ...prev,
           location: prev.location || "",
           care_time: prev.care_time || "",
-          model: prev.model || data.models[0]?.value || "random_forest",
+          model: prev.model || data.models[0]?.value || "neural_network",
         }));
         setCaregiverForm((prev) => ({
           ...prev,
