@@ -1,9 +1,10 @@
-export const API_BASE_URL = import.meta.env.DEV ? "/api" : "https://eldercare-backend-40ad.onrender.com/api";
+const PRODUCTION_API_BASE_URL = "https://eldercare-backend-40ad.onrender.com/api";
 
-// Render free tier spins down when idle (50+ sec cold start).
-// Call this before heavy requests to wake the server first.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "/api" : PRODUCTION_API_BASE_URL);
+
+// Optional warm-up for backends hosted on sleeping/free-tier services.
 export async function wakeUpServer(onStatus) {
-  if (import.meta.env.DEV) return;
+  if (import.meta.env.VITE_ENABLE_BACKEND_WAKEUP !== "true") return;
   try {
     onStatus && onStatus("กำลังปลุก AI server... (อาจใช้เวลา 1-2 นาทีในครั้งแรก)");
     const ctrl = new AbortController();

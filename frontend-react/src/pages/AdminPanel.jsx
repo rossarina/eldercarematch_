@@ -1,6 +1,5 @@
 import { useState } from "react";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
+import { API_BASE_URL } from "../api";
 
 export default function AdminPanel({ onLoginSuccess }) {
   const [email, setEmail] = useState("");
@@ -14,7 +13,7 @@ export default function AdminPanel({ onLoginSuccess }) {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/login`, {
+      const res = await fetch(`${API_BASE_URL}/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

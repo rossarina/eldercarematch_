@@ -32,7 +32,8 @@ app.config["JSON_AS_ASCII"] = False
 # Configure CORS to allow local development and Vercel production origins
 frontend_origins = [
     os.getenv("FRONTEND_ORIGIN", "http://localhost:5173"),
-    "https://elder-care-match.vercel.app"
+    "https://elder-care-match.vercel.app",
+    "https://rossarina.github.io",
 ]
 CORS(app, resources={r"/api/*": {"origins": frontend_origins}})
 

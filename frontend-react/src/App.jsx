@@ -519,7 +519,6 @@ function AppContent() {
     setLoading(true);
     setError("");
     try {
-      // Wake up Render free-tier server first (may take 50+ sec on cold start)
       await wakeUpServer((msg) => msg && setError(msg));
       const result = await matchElder(elderForm);
       if (result.user) {

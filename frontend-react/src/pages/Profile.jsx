@@ -1,18 +1,16 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../AuthContext";
-import { getProfile, updateProfile, uploadProfileImage, changePassword, getCaregiverReviews } from "../api";
+import { API_BASE_URL, getProfile, updateProfile, uploadProfileImage, changePassword, getCaregiverReviews } from "../api";
 import iconArrow from "../icon/arrow.png";
 import iconPerson from "../icon/person.png";
 import iconStar from "../icon/star.png";
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
-
 async function getPayoutAccount(token) {
-  const r = await fetch(`${API_BASE}/payout-account`, { headers: { Authorization: `Bearer ${token}` } });
+  const r = await fetch(`${API_BASE_URL}/payout-account`, { headers: { Authorization: `Bearer ${token}` } });
   return r.json();
 }
 async function savePayoutAccount(token, data) {
-  const r = await fetch(`${API_BASE}/payout-account`, {
+  const r = await fetch(`${API_BASE_URL}/payout-account`, {
     method: "PUT",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify(data),

@@ -11,12 +11,11 @@ import iconHourglass from "../icon/hourglass.png";
 import iconPeople from "../icon/people.png";
 import iconPerson from "../icon/person.png";
 import iconStar from "../icon/star.png";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
+import { API_BASE_URL } from "../api";
 
 function adminRequest(path, options = {}) {
   const token = localStorage.getItem("adminToken");
-  return fetch(`${API_BASE}${path}`, {
+  return fetch(`${API_BASE_URL}${path}`, {
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(options.headers || {}) },
     ...options,
   }).then(async (r) => {
