@@ -1,4 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import iconAi from "../icon/ai.png";
 import iconBell from "../icon/bell.png";
 import iconCharity from "../icon/charity.png";
@@ -77,6 +82,8 @@ export default function AdminDashboard({ admin, onLogout }) {
   const [supportMessages, setSupportMessages] = useState([]);
   const [supportInput, setSupportInput] = useState("");
   const [totalSupportUnread, setTotalSupportUnread] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [refreshCountdown, setRefreshCountdown] = useState(30);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -90,7 +97,7 @@ export default function AdminDashboard({ admin, onLogout }) {
   const loadDashboard = useCallback(async () => {
     setLoading(true);
     const d = await adminRequest("/admin/dashboard");
-    if (d.ok) setStats(d.stats);
+    if (d.ok) { setStats(d.stats); setLastUpdated(new Date()); }
     setLoading(false);
   }, []);
 
@@ -154,6 +161,19 @@ export default function AdminDashboard({ admin, onLogout }) {
     const interval = setInterval(fetchUnread, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-refresh dashboard with live countdown
+  useEffect(() => {
+    if (tab !== "dashboard") return;
+    setRefreshCountdown(30);
+    const interval = setInterval(() => {
+      setRefreshCountdown(prev => {
+        if (prev <= 1) { loadDashboard(); return 30; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [tab, loadDashboard]);
 
   useEffect(() => {
     if (tab === "dashboard") loadDashboard();
@@ -220,31 +240,18 @@ export default function AdminDashboard({ admin, onLogout }) {
   async function handleCreateAdmin(e) {
     e.preventDefault();
     setCreateAdminLoading(true);
-    const d = await adminRequest("/admin/create-new", {
-      method: "POST",
-      body: JSON.stringify(newAdminForm),
-    });
-    if (d.ok) {
-      showToast("สร้าง Admin สำเร็จ");
-      setNewAdminForm({ email: "", password: "", full_name: "", secret: "" });
-    } else {
-      showToast(d.message || "เกิดข้อผิดพลาด", "error");
-    }
+    const d = await adminRequest("/admin/create-new", { method: "POST", body: JSON.stringify(newAdminForm) });
+    if (d.ok) { showToast("สร้าง Admin สำเร็จ"); setNewAdminForm({ email: "", password: "", full_name: "", secret: "" }); }
+    else showToast(d.message || "เกิดข้อผิดพลาด", "error");
     setCreateAdminLoading(false);
   }
-
   async function viewChat(roomId) {
     setLoading(true);
     const d = await adminRequest(`/chat/${roomId}`);
-    if (d.ok) {
-      setSelectedChat(d.room);
-      setChatMessages(d.messages);
-    } else {
-      showToast(d.message || "ไม่สามารถดึงข้อมูลแชทได้", "error");
-    }
+    if (d.ok) { setSelectedChat(d.room); setChatMessages(d.messages); }
+    else showToast(d.message || "ไม่สามารถดึงข้อมูลแชทได้", "error");
     setLoading(false);
   }
-
   async function loadSupportChats() {
     setLoading(true);
     const d = await adminRequest("/admin/support/chats");
@@ -255,46 +262,27 @@ export default function AdminDashboard({ admin, onLogout }) {
     }
     setLoading(false);
   }
-
   async function viewSupportChat(roomId) {
     setLoading(true);
     const d = await adminRequest(`/admin/support/chats/${roomId}`);
-    if (d.ok) {
-      setSelectedSupport(d.room);
-      setSupportMessages(d.messages);
-    } else {
-      showToast(d.message || "ไม่สามารถดึงแชทได้", "error");
-    }
+    if (d.ok) { setSelectedSupport(d.room); setSupportMessages(d.messages); }
+    else showToast(d.message || "ไม่สามารถดึงแชทได้", "error");
     setLoading(false);
   }
-
-
   async function closeSupportChat(roomId) {
     if (!window.confirm("ต้องการปิดเคสนี้หรือไม่?")) return;
     setLoading(true);
     const d = await adminRequest(`/admin/support/chats/${roomId}/close`, { method: "POST" });
-    if (d.ok) {
-      showToast("ปิดเคสเรียบร้อย");
-      setSelectedSupport(d.room);
-      setSupportRooms(prev => prev.map(r => r.id === roomId ? { ...r, is_active: false } : r));
-    } else {
-      showToast(d.message || "ไม่สามารถปิดเคสได้", "error");
-    }
+    if (d.ok) { showToast("ปิดเคสเรียบร้อย"); setSelectedSupport(d.room); setSupportRooms(prev => prev.map(r => r.id === roomId ? { ...r, is_active: false } : r)); }
+    else showToast(d.message || "ไม่สามารถปิดเคสได้", "error");
     setLoading(false);
   }
   async function handleAdminSupportSend(e) {
     e.preventDefault();
     if (!supportInput.trim()) return;
-    const d = await adminRequest(`/admin/support/chats/${selectedSupport.id}`, {
-      method: "POST",
-      body: JSON.stringify({ message: supportInput }),
-    });
-    if (d.ok) {
-      setSupportInput("");
-      viewSupportChat(selectedSupport.id);
-    } else {
-      showToast(d.message || "ส่งข้อความไม่สำเร็จ", "error");
-    }
+    const d = await adminRequest(`/admin/support/chats/${selectedSupport.id}`, { method: "POST", body: JSON.stringify({ message: supportInput }) });
+    if (d.ok) { setSupportInput(""); viewSupportChat(selectedSupport.id); }
+    else showToast(d.message || "ส่งข้อความไม่สำเร็จ", "error");
   }
 
   // ── Helper renders ────────────────────────────────────────────────────────────
@@ -412,21 +400,13 @@ export default function AdminDashboard({ admin, onLogout }) {
                     </a>
                   </div>
                 )}
-                {selectedPayment.caregiver_payout_promptpay && (
-                  <div className="adm-payment-row"><span>PromptPay ผู้ดูแล</span><b>{selectedPayment.caregiver_payout_promptpay}</b></div>
-                )}
-                {selectedPayment.caregiver_payout_bank_account && (
-                  <div className="adm-payment-row"><span>เลขบัญชี</span><b>{selectedPayment.caregiver_payout_bank_name} {selectedPayment.caregiver_payout_bank_account} ({selectedPayment.caregiver_payout_account_name})</b></div>
-                )}
+                {selectedPayment.caregiver_payout_promptpay && <div className="adm-payment-row"><span>PromptPay ผู้ดูแล</span><b>{selectedPayment.caregiver_payout_promptpay}</b></div>}
+                {selectedPayment.caregiver_payout_bank_account && <div className="adm-payment-row"><span>เลขบัญชี</span><b>{selectedPayment.caregiver_payout_bank_name} {selectedPayment.caregiver_payout_bank_account} ({selectedPayment.caregiver_payout_account_name})</b></div>}
               </div>
               <div className="adm-modal-actions">
                 <button className="adm-btn-secondary" onClick={() => setSelectedPayment(null)}>ปิด</button>
-                {selectedPayment.status === "pending_confirm" && (
-                  <button className="adm-btn-approve" onClick={() => confirmSlip(selectedPayment.hire_request_id)}>{iconText(iconCheckmark, "ยืนยันสลิป")}</button>
-                )}
-                {selectedPayment.status === "held" && (
-                  <button className="adm-btn-primary" onClick={() => releasePayment(selectedPayment.hire_request_id)}>Release เงิน</button>
-                )}
+                {selectedPayment.status === "pending_confirm" && <button className="adm-btn-approve" onClick={() => confirmSlip(selectedPayment.hire_request_id)}>{iconText(iconCheckmark, "ยืนยันสลิป")}</button>}
+                {selectedPayment.status === "held" && <button className="adm-btn-primary" onClick={() => releasePayment(selectedPayment.hire_request_id)}>Release เงิน</button>}
               </div>
             </div>
           </div>
@@ -442,108 +422,185 @@ export default function AdminDashboard({ admin, onLogout }) {
                 <span>ผู้ดูแล: <b>{selectedChat.caregiver_name}</b></span>
               </div>
               <div className="adm-chat-history">
-                {chatMessages.length === 0 ? (
-                  <div className="adm-empty">ไม่มีข้อความในห้องแชทนี้</div>
-                ) : (
-                  chatMessages.map(m => {
-                    const senderRole = m.sender_id === selectedChat.elder_user_id ? "elder" : "caregiver";
-                    return (
-                      <div key={m.id} className={`adm-chat-msg ${senderRole}`}>
-                        <div className="adm-chat-bubble">
-                          {m.image_url ? (
-                            <img src={m.image_url} alt="chat" className="adm-chat-img-inline" />
-                          ) : (
-                            m.message
-                          )}
-                        </div>
-                        <div className="adm-chat-time">{new Date(m.created_at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} - {senderRole === "elder" ? "ผู้สูงอายุ" : "ผู้ดูแล"}</div>
-                      </div>
-                    );
-                  })
-                )}
+                {chatMessages.length === 0 ? <div className="adm-empty">ไม่มีข้อความในห้องแชทนี้</div> : chatMessages.map(m => {
+                  const senderRole = m.sender_id === selectedChat.elder_user_id ? "elder" : "caregiver";
+                  return (
+                    <div key={m.id} className={`adm-chat-msg ${senderRole}`}>
+                      <div className="adm-chat-bubble">{m.image_url ? <img src={m.image_url} alt="chat" className="adm-chat-img-inline" /> : m.message}</div>
+                      <div className="adm-chat-time">{new Date(m.created_at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} - {senderRole === "elder" ? "ผู้สูงอายุ" : "ผู้ดูแล"}</div>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="adm-modal-actions">
-                <button className="adm-btn-secondary" onClick={() => setSelectedChat(null)}>ปิด</button>
-              </div>
+              <div className="adm-modal-actions"><button className="adm-btn-secondary" onClick={() => setSelectedChat(null)}>ปิด</button></div>
             </div>
           </div>
         )}
 
-        {/* ── DASHBOARD ─────────────────────────────────────── */}
+        {/* ── DASHBOARD (Advanced UX with Recharts) ─────── */}
         {tab === "dashboard" && (
           <div className="adm-content">
+            <style>{`@keyframes adm-live-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.5)}}`}</style>
             <div className="adm-page-header">
               <div>
                 <h1 className="adm-page-title">{iconText(iconAi, "ภาพรวมแพลตฟอร์ม")}</h1>
-                <p className="adm-page-sub">ยินดีต้อนรับ, {admin?.full_name}</p>
+                <p className="adm-page-sub" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                  ยินดีต้อนรับ, {admin?.full_name}
+                  {lastUpdated && (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "0.75rem", color: "#6b7280", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "20px", padding: "2px 10px" }}>
+                      <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#10b981", display: "inline-block", animation: "adm-live-pulse 2s infinite" }} />
+                      Live · {lastUpdated.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })} · รีเฟรชใน {refreshCountdown}s
+                    </span>
+                  )}
+                </p>
               </div>
-              <button className="adm-btn-secondary" onClick={loadDashboard}>รีเฟรช</button>
+              <button className="adm-btn-secondary" onClick={() => { loadDashboard(); setRefreshCountdown(30); }}>🔄 รีเฟรช</button>
             </div>
-            {loading ? <LoadingSpinner /> : stats && (
-              <>
-                <div className="adm-stat-grid">
-                  <StatCard label="ผู้ใช้ทั้งหมด" value={stats.users.total} sub={`+${stats.users.new_7d} ใน 7 วัน`} icon={iconGroup} color="purple" />
-                  <StatCard label="ผู้สูงอายุ" value={stats.users.elders} sub={`รอ: ${stats.users.pending_elders} คน`} icon={iconPerson} color="blue" />
-                  <StatCard label="ผู้ดูแล" value={stats.users.caregivers} sub={`รอ: ${stats.users.pending_caregivers} คน`} icon={iconCharity} color="green" />
-                  <StatCard label="การจับคู่" value={stats.matches.total} sub={`+${stats.matches.new_7d} ใน 7 วัน`} icon={iconHandshake} color="orange" />
-                  <StatCard label="รอดำเนินการ" value={stats.matches.pending} sub="คำขอรอตอบ" icon={iconHourglass} color="warn" />
-                  <StatCard label="เสร็จสิ้น" value={stats.matches.completed} sub="งานสำเร็จ" icon={iconCheckmark} color="" />
-                  <StatCard label="คะแนน Feedback" value={stats.feedback.avg_rating ? stats.feedback.avg_rating.toFixed(1) : "-"} sub={`จาก ${stats.feedback.total} รีวิว`} icon={iconStar} color="gold" />
-                  <StatCard label="รอ Approve" value={stats.users.pending_elders + stats.users.pending_caregivers} sub="ผู้ใช้รอการอนุมัติ" icon={iconBell} color="warn" onClick={() => setTab("users")} />
-                </div>
 
-                <div className="adm-section-title">{iconText(iconAi, "การลงทะเบียนรายวัน (14 วัน)")}</div>
-                <div className="adm-chart-wrap">
-                  <MiniBarChart data={stats.daily_registrations} />
-                </div>
+            {loading ? <LoadingSpinner /> : stats && (() => {
+              const matchPieData = [
+                { name: "รอดำเนินการ", value: stats.matches.pending, color: "#f59e0b" },
+                { name: "รับงาน", value: stats.matches.accepted, color: "#10b981" },
+                { name: "เสร็จสิ้น", value: stats.matches.completed, color: "#6366f1" },
+                { name: "ปฏิเสธ", value: stats.matches.rejected, color: "#ef4444" },
+              ].filter(d => d.value > 0);
 
-                <div className="adm-two-col">
-                  <div className="adm-card">
-                    <div className="adm-card-title">{iconText(iconHandshake, "สถานะการจับคู่")}</div>
-                    <div className="adm-donut-list">
-                      {[["รอ", stats.matches.pending, "#f59e0b"], ["รับงาน", stats.matches.accepted, "#10b981"], ["เสร็จ", stats.matches.completed, "#6366f1"], ["ปฏิเสธ", stats.matches.rejected, "#ef4444"]].map(([l, v, c]) => (
-                        <div key={l} className="adm-donut-row">
-                          <span className="adm-donut-dot" style={{ background: c }} />
-                          <span className="adm-donut-label">{l}</span>
-                          <div className="adm-donut-bar-wrap"><div className="adm-donut-bar" style={{ width: `${(v / Math.max(stats.matches.total, 1)) * 100}%`, background: c }} /></div>
-                          <span className="adm-donut-val">{v}</span>
+              const regData = (stats.daily_registrations || []).slice(-14).map(d => ({
+                date: (d.date || "").slice(5),
+                จำนวน: d.count,
+              }));
+
+              const feedbackBarData = [
+                { name: "คุณภาพบริการ", score: parseFloat((stats.feedback.avg_service_quality || 0).toFixed(2)) },
+                { name: "ตรงต่อเวลา", score: parseFloat((stats.feedback.avg_punctuality || 0).toFixed(2)) },
+                { name: "การสื่อสาร", score: parseFloat((stats.feedback.avg_communication || 0).toFixed(2)) },
+              ];
+
+              const RegTooltip = ({ active, payload, label }) => active && payload?.length ? (
+                <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", padding: "8px 12px" }}>
+                  <p style={{ color: "#94a3b8", margin: 0, fontSize: "0.75rem" }}>{label}</p>
+                  <p style={{ color: "#818cf8", margin: 0, fontWeight: 700 }}>{payload[0].value} คน</p>
+                </div>
+              ) : null;
+
+              const PieTooltip = ({ active, payload }) => active && payload?.length ? (
+                <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", padding: "8px 12px" }}>
+                  <p style={{ color: payload[0].payload.color, margin: 0, fontWeight: 700 }}>{payload[0].name}: {payload[0].value}</p>
+                </div>
+              ) : null;
+
+              const FbTooltip = ({ active, payload }) => active && payload?.length ? (
+                <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", padding: "8px 12px" }}>
+                  <p style={{ color: "#10b981", margin: 0, fontWeight: 700 }}>{payload[0].value.toFixed(2)} / 5</p>
+                </div>
+              ) : null;
+
+              return (
+                <>
+                  {/* KPI Cards */}
+                  <div className="adm-stat-grid">
+                    <StatCard label="ผู้ใช้ทั้งหมด" value={stats.users.total} sub={`▲ +${stats.users.new_7d} ใน 7 วัน`} icon={iconGroup} color="purple" />
+                    <StatCard label="ผู้สูงอายุ" value={stats.users.elders} sub={`รอ Approve: ${stats.users.pending_elders} คน`} icon={iconPerson} color="blue" />
+                    <StatCard label="ผู้ดูแล" value={stats.users.caregivers} sub={`รอ Approve: ${stats.users.pending_caregivers} คน`} icon={iconCharity} color="green" />
+                    <StatCard label="การจับคู่" value={stats.matches.total} sub={`▲ +${stats.matches.new_7d} ใน 7 วัน`} icon={iconHandshake} color="orange" />
+                    <StatCard label="รอดำเนินการ" value={stats.matches.pending} sub="คำขอรอตอบ" icon={iconHourglass} color="warn" />
+                    <StatCard label="เสร็จสิ้น" value={stats.matches.completed} sub="งานสำเร็จ" icon={iconCheckmark} color="" />
+                    <StatCard label="คะแนน Feedback" value={stats.feedback.avg_rating ? stats.feedback.avg_rating.toFixed(1) : "-"} sub={`จาก ${stats.feedback.total} รีวิว`} icon={iconStar} color="gold" />
+                    <StatCard label="รอ Approve" value={stats.users.pending_elders + stats.users.pending_caregivers} sub="คลิกเพื่อจัดการ" icon={iconBell} color="warn" onClick={() => setTab("users")} />
+                  </div>
+
+                  {/* Charts Row 1: Line + Pie */}
+                  <div className="adm-two-col" style={{ marginTop: "24px" }}>
+                    <div className="adm-card">
+                      <div className="adm-card-title">{iconText(iconGroup, "การลงทะเบียนรายวัน 14 วัน")}</div>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <LineChart data={regData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                          <XAxis dataKey="date" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} />
+                          <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                          <Tooltip content={<RegTooltip />} />
+                          <Line type="monotone" dataKey="จำนวน" stroke="#818cf8" strokeWidth={2.5}
+                            dot={{ fill: "#818cf8", r: 3 }} activeDot={{ r: 6, fill: "#6366f1", stroke: "#312e81", strokeWidth: 2 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="adm-card">
+                      <div className="adm-card-title">{iconText(iconHandshake, "สัดส่วนสถานะการจับคู่")}</div>
+                      {matchPieData.length > 0 ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <ResponsiveContainer width="55%" height={220}>
+                            <PieChart>
+                              <Pie data={matchPieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value" strokeWidth={0}>
+                                {matchPieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                              </Pie>
+                              <Tooltip content={<PieTooltip />} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div style={{ flex: 1 }}>
+                            {matchPieData.map(d => (
+                              <div key={d.name} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+                                <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: d.color, flexShrink: 0 }} />
+                                <span style={{ fontSize: "0.82rem", color: "#9ca3af", flex: 1 }}>{d.name}</span>
+                                <span style={{ fontWeight: 700, color: d.color, fontSize: "1rem" }}>{d.value}</span>
+                              </div>
+                            ))}
+                            <div style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.08)", fontSize: "0.8rem", color: "#6b7280" }}>
+                              ทั้งหมด <b style={{ color: "#e2e8f0" }}>{stats.matches.total}</b> รายการ
+                            </div>
+                          </div>
                         </div>
-                      ))}
+                      ) : <div className="adm-empty">ยังไม่มีข้อมูลการจับคู่</div>}
                     </div>
                   </div>
-                  <div className="adm-card">
-                    <div className="adm-card-title">{iconText(iconStar, "คุณภาพ Feedback เฉลี่ย")}</div>
-                    <div className="adm-big-rating-row">
-                      <div className="adm-big-rating">{stats.feedback.avg_rating?.toFixed(1) || "-"}</div>
-                      <div className="adm-big-stars">{stars(stats.feedback.avg_rating)}</div>
-                    </div>
-                    <div className="adm-feedback-metrics">
-                      {[["คุณภาพบริการ", stats.feedback.avg_service_quality], ["ตรงต่อเวลา", stats.feedback.avg_punctuality], ["การสื่อสาร", stats.feedback.avg_communication]].map(([l, v]) => (
-                        <div key={l} className="adm-metric-row">
-                          <span className="adm-metric-label">{l}</span>
-                          <div className="adm-metric-bar-wrap"><div className="adm-metric-bar" style={{ width: `${(v / 5) * 100}%` }} /></div>
-                          <span className="adm-metric-val">{v?.toFixed(1) || "-"}</span>
+
+                  {/* Charts Row 2: Feedback Bar + Quick Actions */}
+                  <div className="adm-two-col" style={{ marginTop: "16px" }}>
+                    <div className="adm-card">
+                      <div className="adm-card-title">{iconText(iconStar, "คะแนนคุณภาพบริการเฉลี่ย (จาก 5)")}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
+                        <div style={{ fontSize: "3rem", fontWeight: 800, color: "#f59e0b", lineHeight: 1 }}>{stats.feedback.avg_rating?.toFixed(1) || "–"}</div>
+                        <div>
+                          <div style={{ color: "#f59e0b", fontSize: "1.3rem", letterSpacing: "3px" }}>{stars(stats.feedback.avg_rating)}</div>
+                          <div style={{ color: "#6b7280", fontSize: "0.8rem", marginTop: "2px" }}>{stats.feedback.total} รีวิวทั้งหมด</div>
                         </div>
-                      ))}
+                      </div>
+                      <ResponsiveContainer width="100%" height={140}>
+                        <BarChart data={feedbackBarData} layout="vertical" margin={{ top: 0, right: 35, left: 10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                          <XAxis type="number" domain={[0, 5]} tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} />
+                          <YAxis type="category" dataKey="name" tick={{ fill: "#9ca3af", fontSize: 11 }} tickLine={false} axisLine={false} width={85} />
+                          <Tooltip content={<FbTooltip />} />
+                          <Bar dataKey="score" fill="#10b981" radius={[0, 5, 5, 0]} label={{ position: "right", fill: "#10b981", fontSize: 12, fontWeight: 700, formatter: v => v.toFixed(1) }} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="adm-card">
+                      <div className="adm-card-title">{iconText(iconAi, "การดำเนินการด่วน")}</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
+                        <button className="adm-quick-btn" onClick={() => { setUserFilter({ type: "", status: "pending", page: 1 }); setTab("users"); }} style={{ justifyContent: "space-between", padding: "12px 16px" }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}><img src={iconGroup} alt="" className="adm-ui-icon" />ผู้ใช้รอ Approve</span>
+                          <span style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", borderRadius: "12px", padding: "2px 12px", fontWeight: 700 }}>{stats.users.pending_elders + stats.users.pending_caregivers}</span>
+                        </button>
+                        <button className="adm-quick-btn" onClick={() => { setPaymentFilter({ status: "pending_confirm", page: 1 }); setTab("payments"); }} style={{ justifyContent: "space-between", padding: "12px 16px" }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}><img src={iconDollar} alt="" className="adm-ui-icon" />สลิปรอยืนยัน</span>
+                          <span style={{ background: "rgba(99,102,241,0.15)", color: "#818cf8", borderRadius: "12px", padding: "2px 12px", fontWeight: 700 }}>→</span>
+                        </button>
+                        <button className="adm-quick-btn" onClick={() => { setMatchFilter({ status: "pending", page: 1 }); setTab("matches"); }} style={{ justifyContent: "space-between", padding: "12px 16px" }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}><img src={iconHandshake} alt="" className="adm-ui-icon" />คำขอรอตอบ</span>
+                          <span style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", borderRadius: "12px", padding: "2px 12px", fontWeight: 700 }}>{stats.matches.pending}</span>
+                        </button>
+                        <button className="adm-quick-btn" onClick={() => setTab("feedback")} style={{ justifyContent: "space-between", padding: "12px 16px" }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}><img src={iconStar} alt="" className="adm-ui-icon" />ดู Feedback ทั้งหมด</span>
+                          <span style={{ background: "rgba(16,185,129,0.15)", color: "#10b981", borderRadius: "12px", padding: "2px 12px", fontWeight: 700 }}>{stats.feedback.total}</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="adm-section-title">{iconText(iconAi, "การดำเนินการด่วน")}</div>
-                <div className="adm-quick-actions">
-                  <button className="adm-quick-btn" onClick={() => { setUserFilter({ type: "", status: "pending", page: 1 }); setTab("users"); }}>
-                    <img src={iconGroup} alt="group" className="adm-ui-icon" /><span>ผู้ใช้รอ Approve ({stats.users.pending_elders + stats.users.pending_caregivers})</span>
-                  </button>
-                  <button className="adm-quick-btn" onClick={() => { setPaymentFilter({ status: "pending_confirm", page: 1 }); setTab("payments"); }}>
-                    <img src={iconDollar} alt="payment" className="adm-ui-icon" /><span>สลิปรอยืนยัน</span>
-                  </button>
-                  <button className="adm-quick-btn" onClick={() => { setMatchFilter({ status: "pending", page: 1 }); setTab("matches"); }}>
-                    <img src={iconHandshake} alt="handshake" className="adm-ui-icon" /><span>คำขอรอตอบ ({stats.matches.pending})</span>
-                  </button>
-                </div>
-              </>
-            )}
+                </>
+              );
+            })()}
           </div>
         )}
 
@@ -804,7 +861,6 @@ export default function AdminDashboard({ admin, onLogout }) {
             )}
           </div>
         )}
-
 
         {/* ── SUPPORT CHAT ─────────────────────────────────────── */}
         {tab === "support" && (
