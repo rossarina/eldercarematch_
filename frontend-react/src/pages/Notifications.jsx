@@ -667,6 +667,14 @@ export default function Notifications({ onBack, onOpenChat }) {
                   </div>
                 )}
               </div>
+            ) : elderProfileData && elderProfileData.elder_name ? (
+              <div className="elder-profile-body" style={{ textAlign: "center", width: "100%", padding: "20px 0" }}>
+                 <div className="elder-profile-name" style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "8px", color: "#1e293b" }}>
+                     {elderProfileData.elder_name}
+                 </div>
+                 <div style={{ color: "#f59e0b", fontSize: "40px", marginBottom: "12px" }}>⚠️</div>
+                 <p style={{ color: "#64748b", fontSize: "15px", lineHeight: "1.5" }}>ผู้สูงอายุคนนี้ยังไม่ได้กรอกข้อมูลแบบประเมิน (ADL) ในระบบ</p>
+              </div>
             ) : (
               <p style={{ color: "#ef4444" }}>ไม่สามารถโหลดข้อมูลได้</p>
             )}
