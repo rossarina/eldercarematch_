@@ -271,3 +271,7 @@ export async function adminSendSupportMessage(roomId, message, imageUrl = null) 
     body: JSON.stringify({ message, image_url: imageUrl }),
   });
 }
+
+export function getElderProfile(elderUserId) {
+  return request(`/elders/profile/${elderUserId}`, { method: "GET" });
+}

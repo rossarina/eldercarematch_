@@ -1,19 +1,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&family=Sarabun:wght@400;500;600&display=swap");
 
 :root {
-    /* === ธีมเพื่อผู้สูงอายุ: สบายตา คมชัด อ่านง่าย === */
+    /* === 犧倨ｸｵ犧｡犹犧樅ｸｷ犹謂ｸｭ犧憫ｸｹ犹霞ｸｪ犧ｹ犧�ｸｭ犧ｲ犧｢犧ｸ: 犧ｪ犧壟ｸｲ犧｢犧歩ｸｲ 犧�ｸ｡犧癌ｸｱ犧� 犧ｭ犹謂ｸｲ犧吭ｸ�ｹ謂ｸｲ犧｢ === */
     --bg-color: #F7F3EE;
-    /* Warm Cream: พื้นหลังอบอุ่น ไม่จ้าตา */
+    /* Warm Cream: 犧樅ｸｷ犹霞ｸ吭ｸｫ犧･犧ｱ犧�ｸｭ犧壟ｸｭ犧ｸ犹謂ｸ� 犹�ｸ｡犹謂ｸ謂ｹ霞ｸｲ犧歩ｸｲ */
     --text-main: #2C2218;
-    /* Deep Warm Brown: ตัวอักษรหลัก contrast สูง */
+    /* Deep Warm Brown: 犧歩ｸｱ犧ｧ犧ｭ犧ｱ犧≒ｸｩ犧｣犧ｫ犧･犧ｱ犧� contrast 犧ｪ犧ｹ犧� */
     --text-sub: #5A4A3A;
-    /* Medium Warm Brown: ตัวอักษรรอง ยังอ่านชัด */
+    /* Medium Warm Brown: 犧歩ｸｱ犧ｧ犧ｭ犧ｱ犧≒ｸｩ犧｣犧｣犧ｭ犧� 犧｢犧ｱ犧�ｸｭ犹謂ｸｲ犧吭ｸ癌ｸｱ犧� */
     --primary: #7A5C44;
-    /* Rich Taupe: ปุ่มหลัก — คมขึ้น */
+    /* Rich Taupe: 犧巵ｸｸ犹謂ｸ｡犧ｫ犧･犧ｱ犧� 窶� 犧�ｸ｡犧もｸｶ犹霞ｸ� */
     --primary-hover: #624838;
-    /* Deep Taupe: hover เข้มพอ */
+    /* Deep Taupe: hover 犹犧もｹ霞ｸ｡犧樅ｸｭ */
     --border-color: #C8B5A5;
-    /* Warm Beige Border: ขอบชัดขึ้น */
+    /* Warm Beige Border: 犧もｸｭ犧壟ｸ癌ｸｱ犧扉ｸもｸｶ犹霞ｸ� */
     --card-bg: #FFFFFF;
     /* White cards */
     --hero-bg: #F0EAE3;
@@ -21,13 +21,13 @@
     --ml-bg: #F0EAE3;
     --cta-bg: #E4D9CE;
     --accent: #C8884A;
-    /* Warm Amber: เน้นจุดสำคัญ */
+    /* Warm Amber: 犹犧吭ｹ霞ｸ吭ｸ謂ｸｸ犧扉ｸｪ犧ｳ犧�ｸｱ犧� */
     --secondary: #4E6E40;
-    /* Deep Sage Green: ปุ่มรอง — คมขึ้น */
+    /* Deep Sage Green: 犧巵ｸｸ犹謂ｸ｡犧｣犧ｭ犧� 窶� 犧�ｸ｡犧もｸｶ犹霞ｸ� */
     --success-color: #2D6A4F;
-    /* Deep Green สำหรับข้อความสำเร็จ */
+    /* Deep Green 犧ｪ犧ｳ犧ｫ犧｣犧ｱ犧壟ｸもｹ霞ｸｭ犧�ｸｧ犧ｲ犧｡犧ｪ犧ｳ犹犧｣犹�ｸ� */
     --error-color: #8B2000;
-    /* Deep Red สำหรับข้อผิดพลาด */
+    /* Deep Red 犧ｪ犧ｳ犧ｫ犧｣犧ｱ犧壟ｸもｹ霞ｸｭ犧憫ｸｴ犧扉ｸ樅ｸ･犧ｲ犧� */
 }
 
 
@@ -43,9 +43,9 @@ body {
     color: var(--text-main);
     background: var(--bg-color);
     font-size: 17px;
-    /* ใหญ่ขึ้นเพื่อผู้สูงอายุ */
+    /* 犹�ｸｫ犧財ｹ謂ｸもｸｶ犹霞ｸ吭ｹ犧樅ｸｷ犹謂ｸｭ犧憫ｸｹ犹霞ｸｪ犧ｹ犧�ｸｭ犧ｲ犧｢犧ｸ */
     line-height: 1.75;
-    /* ช่องไฟบรรทัดมากขึ้น */
+    /* 犧癌ｹ謂ｸｭ犧�ｹ�ｸ游ｸ壟ｸ｣犧｣犧伶ｸｱ犧扉ｸ｡犧ｲ犧≒ｸもｸｶ犹霞ｸ� */
 }
 
 button,
@@ -860,13 +860,13 @@ select.ecm-input {
 
 .budget-ok {
     background: rgba(30, 110, 60, 0.82);
-    /* เขียวเข้ม — อยู่ในงบ */
+    /* 犹犧もｸｵ犧｢犧ｧ犹犧もｹ霞ｸ｡ 窶� 犧ｭ犧｢犧ｹ犹謂ｹ�ｸ吭ｸ�ｸ� */
     color: #ffffff;
 }
 
 .budget-over {
     background: rgba(160, 30, 20, 0.85);
-    /* แดงเข้ม — เกินงบ */
+    /* 犹≒ｸ扉ｸ�ｹ犧もｹ霞ｸ｡ 窶� 犹犧≒ｸｴ犧吭ｸ�ｸ� */
     color: #ffffff;
 }
 
@@ -980,7 +980,7 @@ select.ecm-input {
     opacity: 0.85;
 }
 
-/* 🔔 Notification bell button */
+/* �粕 Notification bell button */
 .btn-notif {
     position: relative;
     background: none;
@@ -1962,7 +1962,7 @@ select.ecm-input {
     font-weight: 700;
     flex-shrink: 0;
     overflow: hidden;
-    /* ตัดรูปให้พอดีวงกลม */
+    /* 犧歩ｸｱ犧扉ｸ｣犧ｹ犧巵ｹ�ｸｫ犹霞ｸ樅ｸｭ犧扉ｸｵ犧ｧ犧�ｸ≒ｸ･犧｡ */
     border: 2px solid var(--border-color);
 }
 
@@ -2633,7 +2633,7 @@ button {
 }
 
 /* ================================================================
-   PROFILE PAGE STYLES — เหมาะสำหรับผู้สูงอายุ
+   PROFILE PAGE STYLES 窶� 犹犧ｫ犧｡犧ｲ犧ｰ犧ｪ犧ｳ犧ｫ犧｣犧ｱ犧壟ｸ憫ｸｹ犹霞ｸｪ犧ｹ犧�ｸｭ犧ｲ犧｢犧ｸ
    ================================================================ */
 
 .profile-loading {
@@ -2668,7 +2668,7 @@ button {
     margin: 0;
 }
 
-/* ─── Avatar Section ─── */
+/* 笏笏笏 Avatar Section 笏笏笏 */
 .profile-avatar-row {
     display: flex;
     flex-direction: column;
@@ -2730,7 +2730,7 @@ button {
     text-align: center;
 }
 
-/* ─── Content Sections ─── */
+/* 笏笏笏 Content Sections 笏笏笏 */
 .profile-content {
     display: flex;
     flex-direction: column;
@@ -2762,7 +2762,7 @@ button {
     margin: 0;
 }
 
-/* ─── Info Display ─── */
+/* 笏笏笏 Info Display 笏笏笏 */
 .profile-info {
     display: flex;
     flex-direction: column;
@@ -2804,7 +2804,7 @@ button {
     font-size: 14px;
 }
 
-/* ─── Form ─── */
+/* 笏笏笏 Form 笏笏笏 */
 .profile-form {
     display: flex;
     flex-direction: column;
@@ -2860,7 +2860,7 @@ button {
     flex-wrap: wrap;
 }
 
-/* ─── Alert Messages ─── */
+/* 笏笏笏 Alert Messages 笏笏笏 */
 .error-message {
     padding: 14px 18px;
     border-radius: 12px;
@@ -2892,7 +2892,7 @@ button {
     margin-bottom: 16px;
 }
 
-/* ─── Feedback Summary ─── */
+/* 笏笏笏 Feedback Summary 笏笏笏 */
 .profile-feedback-summary {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -2953,7 +2953,7 @@ button {
     color: var(--text-sub);
 }
 
-/* ─── Buttons in Profile ─── */
+/* 笏笏笏 Buttons in Profile 笏笏笏 */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -4732,7 +4732,7 @@ button {
     color: #5a5a5a;
 }
 
-/* ── Auth Pages (Login / Signup / GoogleCallback) ── */
+/* 笏笏 Auth Pages (Login / Signup / GoogleCallback) 笏笏 */
 .auth-container {
     min-height: 100vh;
     display: flex;
@@ -5579,7 +5579,7 @@ button {
     margin-top: 4px;
 }
 
-/* ── PromptPay Account Display ── */
+/* 笏笏 PromptPay Account Display 笏笏 */
 .payment-promptpay-account {
     display: flex;
     align-items: center;
@@ -5608,7 +5608,7 @@ button {
     letter-spacing: 0.05em;
 }
 
-/* ── PromptPay QR Section ── */
+/* 笏笏 PromptPay QR Section 笏笏 */
 .payment-qr-section {
     margin-bottom: 18px;
 }
@@ -5688,7 +5688,7 @@ button {
     border: 1px solid #86efac;
 }
 
-/* ── Slip Upload Zone ── */
+/* 笏笏 Slip Upload Zone 笏笏 */
 .payment-slip-upload-zone {
     display: block;
     width: 100%;
@@ -5839,9 +5839,9 @@ button {
 }
 
 
-/* ═══════════════════════════════════════════════════════════════
-   ADMIN PANEL — Complete Design System
-   ═══════════════════════════════════════════════════════════════ */
+/* 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊�
+   ADMIN PANEL 窶� Complete Design System
+   笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊� */
 
 :root {
     --adm-bg: #F7F3EE;
@@ -7483,7 +7483,7 @@ button {
     }
 }
 
-/* ── Admin Chat View ── */
+/* 笏笏 Admin Chat View 笏笏 */
 .adm-chat-meta {
     display: flex;
     justify-content: space-between;
@@ -7542,7 +7542,7 @@ button {
 .adm-chat-msg.caregiver .adm-chat-time {
     text-align: right;
 }
-/* ── Support Chat Widget ── */
+/* 笏笏 Support Chat Widget 笏笏 */
 .support-widget-container {
     position: fixed;
     bottom: 24px;
@@ -7570,7 +7570,7 @@ button {
     box-shadow: 0 8px 24px rgba(0,0,0,0.25);
 }
 
-/* ── Desktop popup ── */
+/* 笏笏 Desktop popup 笏笏 */
 .support-chat-box {
     width: 360px;
     height: 500px;
@@ -7583,7 +7583,7 @@ button {
     animation: slideUpWidget 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Mobile fullscreen overlay ── */
+/* 笏笏 Mobile fullscreen overlay 笏笏 */
 .support-fullscreen {
     position: fixed;
     inset: 0;
@@ -7604,7 +7604,7 @@ button {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Shared Header ── */
+/* 笏笏 Shared Header 笏笏 */
 .support-chat-header {
     background: var(--primary);
     color: white;
@@ -7688,7 +7688,7 @@ button {
     background: rgba(255,255,255,0.3);
 }
 
-/* ── Chat Body ── */
+/* 笏笏 Chat Body 笏笏 */
 .support-chat-body {
     flex: 1;
     background: #f4f6f8;
@@ -7704,7 +7704,7 @@ button {
     padding: 16px 16px;
 }
 
-/* ── Date divider ── */
+/* 笏笏 Date divider 笏笏 */
 .support-date-divider {
     text-align: center;
     font-size: 12px;
@@ -7716,7 +7716,7 @@ button {
     width: fit-content;
 }
 
-/* ── Messages ── */
+/* 笏笏 Messages 笏笏 */
 .support-msg-row {
     display: flex;
     flex-direction: column;
@@ -7807,7 +7807,7 @@ button {
     margin-top: 20px;
 }
 
-/* ── Admin Support Chat View ── */
+/* 笏笏 Admin Support Chat View 笏笏 */
 .adm-support-chat-view {
     display: flex;
     flex-direction: column;
@@ -7846,7 +7846,7 @@ button {
     border-color: #3b82f6;
 }
 
-/* ── Premium Notification Badge Styling ── */
+/* 笏笏 Premium Notification Badge Styling 笏笏 */
 .notif-tab {
     position: relative;
 }
@@ -7895,7 +7895,7 @@ button {
     line-height: 1;
 }
 
-/* �� Support Chat Input & Fullscreen Overrides �� */
+/* ﾄﾄ Support Chat Input & Fullscreen Overrides ﾄﾄ */
 .support-chat-input {
     display: flex;
     padding: 12px 14px;
@@ -7957,7 +7957,7 @@ button {
     padding: 40px 20px;
 }
 
-/* �� Fix user message right-alignment �� */
+/* ﾄﾄ Fix user message right-alignment ﾄﾄ */
 .support-msg-row.user {
     margin-left: auto;
 }
@@ -7965,7 +7965,7 @@ button {
     margin-right: auto;
 }
 
-/* ── Admin Support Chat UI Overrides ── */
+/* 笏笏 Admin Support Chat UI Overrides 笏笏 */
 .adm-support-chat-view {
     display: flex;
     flex-direction: column;
@@ -8181,7 +8181,7 @@ button {
     cursor: not-allowed;
 }
 
-/* ── Admin Support Inbox Layout ── */
+/* 笏笏 Admin Support Inbox Layout 笏笏 */
 .adm-inbox-content {
     display: flex;
     flex-direction: column;
@@ -8325,9 +8325,9 @@ button {
     box-shadow: none;
 }
 
-/* ═══════════════════════════════════════════
+/* 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊�
    MOBILE SWIPE CARD UI
-═══════════════════════════════════════════ */
+笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊� */
 @media (max-width: 768px) {
   .swipe-container {
     display: flex;
@@ -8623,9 +8623,9 @@ button {
   }
 }
 
-/* ═══════════════════════════════════════════
+/* 笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊�
    MODAL & SWIPE CARD ACTIONS UI
-═══════════════════════════════════════════ */
+笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊絶武笊� */
 .swipe-card-actions-row {
   display: flex;
   gap: 8px;
@@ -8690,4 +8690,128 @@ button {
 
 .modal-close:hover {
   color: #333;
+}
+/* -------------------------------------- */
+/* Admin Mobile Responsive Fix            */
+/* -------------------------------------- */
+.adm-mobile-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .adm-layout {
+    flex-direction: row !important;
+    overflow-x: hidden;
+  }
+  
+  .adm-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh !important;
+    width: 260px !important;
+    min-width: 260px !important;
+    z-index: 9999 !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    flex-direction: column !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5) !important;
+  }
+  
+  /* When sidebar is collapsed on mobile, slide it completely out of view */
+  .adm-sidebar.collapsed {
+    transform: translateX(-100%) !important;
+    width: 260px !important; /* Override the 64px collapse */
+  }
+
+  .adm-sidebar-logo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 20px;
+    width: 100%;
+  }
+
+  /* Make sure nav items and user info remain visible inside the open drawer */
+  .adm-sidebar.collapsed .adm-nav,
+  .adm-sidebar.collapsed .adm-sidebar-user {
+    display: flex !important; 
+  }
+  
+  .adm-content {
+    width: 100% !important;
+    padding: 16px !important;
+    margin-left: 0 !important;
+    padding-top: 60px !important; /* Space for the fake top header */
+  }
+  
+  .adm-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .adm-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .adm-search-bar {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Create a sticky top header bar on mobile */
+  .adm-layout::before {
+    content: "ElderCare Admin";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: #4A3728;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+
+  /* Mobile Toggle Button (Hamburger) */
+  .adm-mobile-toggle {
+    display: flex !important;
+    position: fixed;
+    top: 7px;
+    left: 12px;
+    z-index: 10001;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+
+  .adm-mobile-toggle:active {
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* Hide the desktop sidebar toggle button when on mobile */
+  .adm-sidebar-toggle {
+    display: none !important;
+  }
+}
+
+.notif-btn--info {
+  background: #f1f5f9;
+  color: #3b82f6;
+  border: 1px solid #cbd5e1;
+}
+
+.notif-btn--info:hover:not(:disabled) {
+  background: #e2e8f0;
 }

@@ -52,7 +52,7 @@ const TABS = [
 
 export default function AdminDashboard({ admin, onLogout }) {
   const [tab, setTab] = useState("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [userTotal, setUserTotal] = useState(0);
@@ -302,13 +302,17 @@ export default function AdminDashboard({ admin, onLogout }) {
     const [cls, src, label] = map[s] || ["adm-badge-info", iconAi, s];
     return <span className={`adm-badge ${cls}`}>{iconText(src, label)}</span>;
   };
-
   const stars = (n) => "★".repeat(Math.round(n || 0)) + "☆".repeat(5 - Math.round(n || 0));
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString("th-TH", { year: "2-digit", month: "short", day: "numeric" }) : "-";
   const fmtMoney = (n) => n ? Number(n).toLocaleString("th-TH") + " ฿" : "-";
 
   return (
     <div className="adm-layout">
+      {/* Mobile Toggle Button */}
+      <button className="adm-mobile-toggle" onClick={() => setSidebarOpen(!sidebarOpen)} title="Menu">
+        ☰
+      </button>
+
       {/* Sidebar */}
       <aside className={`adm-sidebar${sidebarOpen ? "" : " collapsed"}`}>
         <div className="adm-sidebar-logo">

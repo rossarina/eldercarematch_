@@ -1418,6 +1418,37 @@ def get_my_elder_profile():
         return api_error(f"ไม่สามารถดึงข้อมูลผู้สูงอายุได้: {exc}", 500)
 
 
+@app.route("/api/elders/profile/<int:elder_user_id>", methods=["GET"])
+@jwt_required()
+def get_elder_profile(elder_user_id):
+    try:
+        current_user = get_logged_in_user(optional=False)
+        if not current_user:
+            return api_error("ไม่พบผู้ใช้", 404)
+        
+        elder_user = User.query.get(elder_user_id)
+        if not elder_user or elder_user.user_type != "elder":
+            return api_error("ไม่พบข้อมูลผู้สูงอายุ", 404)
+            
+        if not elder_user.elder_id:
+            return api_error("ผู้สูงอายุยังไม่ได้กรอกข้อมูล", 404)
+
+        worksheet = get_sheet("Elder_ADL_Data")
+        row_index = find_elder_row_index(worksheet, elder_user.elder_id)
+        if not row_index:
+            return api_error("ไม่พบข้อมูลผู้สูงอายุในระบบ", 404)
+
+        row = worksheet.row_values(row_index)
+        return jsonify({
+            "ok": True,
+            "elder_name": elder_user.full_name,
+            "elder_id": elder_user.elder_id,
+            "form": parse_elder_sheet_row(row)
+        })
+    except Exception as exc:
+        return api_error(f"ไม่สามารถดึงข้อมูลผู้สูงอายุ: {exc}", 500)
+
+
 @app.route("/api/elders/match", methods=["POST"])
 def match_elder():
     payload = request.get_json(silent=True) or {}

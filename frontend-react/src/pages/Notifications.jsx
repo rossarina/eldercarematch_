@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, Fragment, useRef } from "react";
 import { useAuth } from "../AuthContext";
-import { getNotifications, respondHire, getChatRooms, markNotificationsRead, submitFeedback } from "../api";
+import { getNotifications, respondHire, getChatRooms, markNotificationsRead, submitFeedback, getElderProfile } from "../api";
 import iconArrow from "../icon/arrow.png";
 import iconBell from "../icon/bell.png";
 import iconForm from "../icon/form.png";
@@ -53,6 +53,11 @@ export default function Notifications({ onBack, onOpenChat }) {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewTarget, setReviewTarget] = useState(null); // { hire_request_id, caregiver_sheet_id, caregiver_name }
+  // Elder profile modal states
+  const [showElderProfile, setShowElderProfile] = useState(false);
+  const [elderProfileData, setElderProfileData] = useState(null);
+  const [elderProfileLoading, setElderProfileLoading] = useState(false);
+
   const isCaregiver = user?.user_type === "caregiver";
   const prevNotificationsRef = useRef([]);
   const notificationsRef = useRef([]);
@@ -167,6 +172,21 @@ export default function Notifications({ onBack, onOpenChat }) {
       setError(err.message);
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleViewElderProfile = async (elderUserId) => {
+    setElderProfileLoading(true);
+    setElderProfileData(null);
+    setShowElderProfile(true);
+    try {
+      const data = await getElderProfile(elderUserId);
+      setElderProfileData(data);
+    } catch (err) {
+      setError(err.message || "ไม่สามารถดึงข้อมูลผู้สูงอายุได้");
+      setShowElderProfile(false);
+    } finally {
+      setElderProfileLoading(false);
     }
   };
 
@@ -483,9 +503,16 @@ export default function Notifications({ onBack, onOpenChat }) {
                       )}
 
                       {/* ปุ่มรับงาน/ปฏิเสธ อยู่ในกล่องแจ้งเตือน (กรณี pending) */}
-                      <div className="notif-actions" style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                      <div className="notif-actions" style={{ display: "flex", gap: "8px", marginTop: "12px", flexWrap: "wrap" }}>
                         {isCaregiver && notif.status === "pending" && !isSuperseded && (
                           <>
+                            <button
+                              className="notif-btn notif-btn--info"
+                              disabled={!!actionLoading}
+                              onClick={() => handleViewElderProfile(notif.elder_user_id)}
+                            >
+                              👤 ดูข้อมูลผู้สูงอายุ
+                            </button>
                             <button
                               className="notif-btn notif-btn--accept"
                               disabled={!!actionLoading}
@@ -595,6 +622,61 @@ export default function Notifications({ onBack, onOpenChat }) {
                 disabled={reviewSubmitting || !reviewService || !reviewPunctuality || !reviewCommunication}
               >
                 {reviewSubmitting ? "กำลังส่ง..." : "ส่งรีวิว"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Elder Profile Modal */}
+      {showElderProfile && (
+        <div className="chat-modal-overlay" onClick={() => setShowElderProfile(false)}>
+          <div className="chat-modal-card elder-profile-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "500px" }}>
+            <div style={{ fontSize: "40px", marginBottom: "12px" }}>👤</div>
+            <h3>ข้อมูลผู้สูงอายุ</h3>
+            {elderProfileLoading ? (
+              <p style={{ color: "#717171" }}>กำลังโหลดข้อมูล...</p>
+            ) : elderProfileData && elderProfileData.form ? (
+              <div className="elder-profile-body" style={{ textAlign: "left", width: "100%", fontSize: "14px" }}>
+                <div className="elder-profile-name" style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px", textAlign: "center" }}>
+                    {elderProfileData.elder_name}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
+                  <div><strong>อายุ:</strong> {elderProfileData.form.age || "-"} ปี</div>
+                  <div><strong>เพศ:</strong> {elderProfileData.form.gender || "-"}</div>
+                  <div><strong>พื้นที่:</strong> {elderProfileData.form.location || "-"}</div>
+                  <div><strong>เวลาดูแล:</strong> {elderProfileData.form.care_time || "-"}</div>
+                  <div style={{ gridColumn: "span 2" }}>
+                    <strong>งบประมาณ:</strong> {elderProfileData.form.wage_range ? `${elderProfileData.form.wage_range[0].toLocaleString()} บาท` : "-"}
+                  </div>
+                </div>
+                
+                {elderProfileData.form.adl_scores && (
+                  <div className="elder-profile-adl">
+                    <div style={{ fontWeight: "bold", marginBottom: "8px", borderBottom: "1px solid #eee", paddingBottom: "4px" }}>คะแนน ADL (ความสามารถในชีวิตประจำวัน)</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "8px", fontSize: "13px" }}>
+                        <div>การรับประทานอาหาร:</div><div>{elderProfileData.form.adl_scores.v1}</div>
+                        <div>การล้างหน้า/หวีผม:</div><div>{elderProfileData.form.adl_scores.v2}</div>
+                        <div>การลุกนั่ง:</div><div>{elderProfileData.form.adl_scores.v3}</div>
+                        <div>การเข้าห้องน้ำ:</div><div>{elderProfileData.form.adl_scores.v4}</div>
+                        <div>การเคลื่อนที่:</div><div>{elderProfileData.form.adl_scores.v5}</div>
+                        <div>การขึ้นบันได:</div><div>{elderProfileData.form.adl_scores.v6}</div>
+                        <div>การแต่งตัว:</div><div>{elderProfileData.form.adl_scores.v7}</div>
+                        <div>การควบคุมขับถ่าย:</div><div>{elderProfileData.form.adl_scores.v8}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p style={{ color: "#ef4444" }}>ไม่สามารถโหลดข้อมูลได้</p>
+            )}
+            <div className="chat-modal-actions" style={{ marginTop: "24px" }}>
+              <button
+                type="button"
+                style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "none", background: "#f1f5f9", cursor: "pointer", fontWeight: "bold" }}
+                onClick={() => setShowElderProfile(false)}
+              >
+                ปิด
               </button>
             </div>
           </div>
