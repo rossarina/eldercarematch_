@@ -651,21 +651,46 @@ export default function Notifications({ onBack, onOpenChat }) {
                   </div>
                 </div>
                 
-                {elderProfileData.form.adl_scores && (
-                  <div className="elder-profile-adl">
-                    <div style={{ fontWeight: "bold", marginBottom: "8px", borderBottom: "1px solid #eee", paddingBottom: "4px" }}>คะแนน ADL (ความสามารถในชีวิตประจำวัน)</div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "8px", fontSize: "13px" }}>
-                        <div>การรับประทานอาหาร:</div><div>{elderProfileData.form.adl_scores.v1}</div>
-                        <div>การล้างหน้า/หวีผม:</div><div>{elderProfileData.form.adl_scores.v2}</div>
-                        <div>การลุกนั่ง:</div><div>{elderProfileData.form.adl_scores.v3}</div>
-                        <div>การเข้าห้องน้ำ:</div><div>{elderProfileData.form.adl_scores.v4}</div>
-                        <div>การเคลื่อนที่:</div><div>{elderProfileData.form.adl_scores.v5}</div>
-                        <div>การขึ้นบันได:</div><div>{elderProfileData.form.adl_scores.v6}</div>
-                        <div>การแต่งตัว:</div><div>{elderProfileData.form.adl_scores.v7}</div>
-                        <div>การควบคุมขับถ่าย:</div><div>{elderProfileData.form.adl_scores.v8}</div>
+                {elderProfileData.form.adl_scores && (() => {
+                  const ADL_LABELS = {
+                    v1: "การรับประทานอาหาร",
+                    v2: "การล้างหน้า/หวีผม",
+                    v3: "การลุกนั่ง",
+                    v4: "การเข้าห้องน้ำ",
+                    v5: "การเคลื่อนที่",
+                    v6: "การขึ้นบันได",
+                    v7: "การแต่งตัว",
+                    v8: "การควบคุมขับถ่าย",
+                  };
+                  const needs = Object.entries(elderProfileData.form.adl_scores)
+                    .filter(([, val]) => Number(val) === 1)
+                    .map(([key]) => ADL_LABELS[key])
+                    .filter(Boolean);
+                  return needs.length > 0 ? (
+                    <div className="elder-profile-adl">
+                      <div style={{ fontWeight: "bold", marginBottom: "10px", borderBottom: "1px solid #eee", paddingBottom: "4px" }}>ต้องการความช่วยเหลือด้าน</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                        {needs.map((label) => (
+                          <span key={label} style={{
+                            background: "#f0fdf4",
+                            color: "#16a34a",
+                            border: "1px solid #bbf7d0",
+                            borderRadius: "20px",
+                            padding: "4px 12px",
+                            fontSize: "13px",
+                            fontWeight: "500",
+                          }}>{label}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="elder-profile-adl">
+                      <div style={{ fontWeight: "bold", marginBottom: "8px", borderBottom: "1px solid #eee", paddingBottom: "4px" }}>ต้องการความช่วยเหลือด้าน</div>
+                      <p style={{ color: "#64748b", fontSize: "13px" }}>ช่วยเหลือตัวเองได้ทุกด้าน</p>
+                    </div>
+                  );
+                })()}
+
               </div>
             ) : elderProfileData && elderProfileData.elder_name ? (
               <div className="elder-profile-body" style={{ textAlign: "center", width: "100%", padding: "20px 0" }}>
