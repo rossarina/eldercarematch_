@@ -671,16 +671,22 @@ def build_caregiver_sheet_row(payload, caregiver_id):
 
 def find_caregiver_row_index(worksheet, caregiver_id):
     rows = worksheet.get_all_values()
+    if not caregiver_id:
+        return None
+    target_id = caregiver_id.strip().upper()
     for index, row in enumerate(rows[1:], start=2):
-        if row and row[0].strip() == caregiver_id:
+        if row and row[0].strip().upper() == target_id:
             return index
     return None
 
 
 def find_elder_row_index(worksheet, elder_id):
     rows = worksheet.get_all_values()
+    if not elder_id:
+        return None
+    target_id = elder_id.strip().upper()
     for index, row in enumerate(rows[1:], start=2):
-        if row and row[0].strip() == elder_id:
+        if row and row[0].strip().upper() == target_id:
             return index
     return None
 
@@ -1431,12 +1437,12 @@ def get_elder_profile(elder_user_id):
             return api_error("ไม่พบข้อมูลผู้สูงอายุ", 404)
             
         if not elder_user.elder_id:
-            return api_error("ผู้สูงอายุยังไม่ได้กรอกข้อมูล", 404)
+            return jsonify({"ok": True, "elder_name": elder_user.full_name, "elder_id": None, "form": None})
 
         worksheet = get_sheet("Elder_ADL_Data")
         row_index = find_elder_row_index(worksheet, elder_user.elder_id)
         if not row_index:
-            return api_error("ไม่พบข้อมูลผู้สูงอายุในระบบ", 404)
+            return jsonify({"ok": True, "elder_name": elder_user.full_name, "elder_id": elder_user.elder_id, "form": None})
 
         row = worksheet.row_values(row_index)
         return jsonify({
@@ -1551,6 +1557,9 @@ def hire_caregiver():
     user = User.query.get(user_id)
     if not user or user.user_type != 'elder':
         return api_error("เฉพาะผู้สูงอายุเท่านั้นที่สามารถจ้างผู้ดูแลได้", 403)
+        
+    if not user.elder_id:
+        return api_error("กรุณากรอกข้อมูลแบบประเมินผู้สูงอายุ (ADL) และบันทึกรหัสในโปรไฟล์ก่อนทำการจ้าง", 400)
 
     payload = request.get_json(silent=True) or {}
     caregiver_sheet_id = payload.get('caregiver_id', '').strip()
