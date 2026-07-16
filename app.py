@@ -1518,12 +1518,20 @@ def match_elder():
                     item["avatar_url"] = None
 
         # --- Save to Google Sheets in background (don't block response) ---
+        app_context = app.app_context()
+        user_id_to_update = current_user.id if current_user else None
+
         def _bg_save():
-            try:
-                saved = save_elder(payload, elder_id=existing_elder_id)
-                attach_elder_to_logged_in_user(saved["elder_id"])
-            except Exception as _e:
-                print(f"[bg_save] Warning: {_e}")
+            with app_context:
+                try:
+                    saved = save_elder(payload, elder_id=existing_elder_id)
+                    if user_id_to_update:
+                        u = User.query.get(user_id_to_update)
+                        if u and u.user_type == "elder":
+                            u.elder_id = saved["elder_id"]
+                            db.session.commit()
+                except Exception as _e:
+                    print(f"[bg_save] Warning: {_e}")
 
         import threading as _t
         _t.Thread(target=_bg_save, daemon=True).start()
