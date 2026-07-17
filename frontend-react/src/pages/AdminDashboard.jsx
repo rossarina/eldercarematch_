@@ -549,8 +549,8 @@ export default function AdminDashboard({ admin, onLogout }) {
                                 <span style={{ fontWeight: 700, color: d.color, fontSize: "1rem" }}>{d.value}</span>
                               </div>
                             ))}
-                            <div style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.08)", fontSize: "0.8rem", color: "#6b7280" }}>
-                              ทั้งหมด <b style={{ color: "#ffffff", fontSize: "1rem", fontWeight: 800 }}>{stats.matches.total}</b> รายการ
+                            <div style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(0,0,0,0.08)", fontSize: "0.8rem", color: "#6b7280" }}>
+                              ทั้งหมด <b style={{ color: "#111827", fontSize: "1rem", fontWeight: 800 }}>{stats.matches.total}</b> รายการ
                             </div>
                           </div>
                         </div>
