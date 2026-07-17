@@ -550,7 +550,7 @@ export default function AdminDashboard({ admin, onLogout }) {
                               </div>
                             ))}
                             <div style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.08)", fontSize: "0.8rem", color: "#6b7280" }}>
-                              ทั้งหมด <b style={{ color: "#e2e8f0" }}>{stats.matches.total}</b> รายการ
+                              ทั้งหมด <b style={{ color: "#ffffff", fontSize: "1rem", fontWeight: 800 }}>{stats.matches.total}</b> รายการ
                             </div>
                           </div>
                         </div>
